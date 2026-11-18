@@ -1,0 +1,8 @@
+node_modules/
+data/
+.env
+*.log
+livekit.yaml
+ingress.yaml
+egress.yaml
+backups/

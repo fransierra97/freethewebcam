@@ -1,0 +1,104 @@
+# Deployment on a Linux server. Prepared by ./install.sh and managed with ./ftw.
+# Almost everything uses the server's (host) network: WebRTC needs many UDP ports, and this way
+# services talk over 127.0.0.1 without being exposed outside.
+# Optional services (profiles): “obs” (LiveKit Ingress) and “recording” (LiveKit Egress).
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    network_mode: host
+    env_file: .env
+    environment:
+      HOST: 127.0.0.1
+      DATABASE_URL: postgres://ftw:${POSTGRES_PASSWORD}@127.0.0.1:5432/ftw
+      REDIS_URL: redis://:${REDIS_PASSWORD}@127.0.0.1:6379
+      LIVEKIT_API_URL: http://127.0.0.1:7880
+      MEDIA_DIR: /media
+      EGRESS_OUTPUT_DIR: /out
+    volumes:
+      - appdata:/data
+      - media:/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ftw
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ftw
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ftw"]
+      interval: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    network_mode: host
+    command: ["redis-server", "--bind", "127.0.0.1", "--port", "6379", "--requirepass", "${REDIS_PASSWORD}", "--save", "", "--appendonly", "no"]
+
+  livekit:
+    image: livekit/livekit-server:v1.13.11
+    restart: unless-stopped
+    network_mode: host
+    command: --config /etc/livekit.yaml
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+      # Caddy certificates, for TURN over TLS (./ftw enable turn).
+      - caddy_data:/caddy:ro
+    depends_on:
+      - redis
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+  ingress:
+    profiles: ["obs"]
+    image: livekit/ingress:v1.6.0
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      INGRESS_CONFIG_FILE: /etc/ingress.yaml
+    volumes:
+      - ./ingress.yaml:/etc/ingress.yaml:ro
+    depends_on:
+      - livekit
+
+  egress:
+    profiles: ["recording"]
+    image: livekit/egress:v1.15.0
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      EGRESS_CONFIG_FILE: /etc/egress.yaml
+    volumes:
+      - ./egress.yaml:/etc/egress.yaml:ro
+      - media:/out
+    depends_on:
+      - livekit
+
+volumes:
+  appdata:
+  pgdata:
+  media:
+  caddy_data:
+  caddy_config:

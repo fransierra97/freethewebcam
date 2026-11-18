@@ -1,0 +1,17 @@
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# LiveKit signalling on the same domain: the browser connects to wss://DOMAIN/rtc
+	@livekit path /rtc /rtc/*
+	reverse_proxy @livekit 127.0.0.1:7880
+
+	# WHIP for streaming from OBS (only if the “obs” service is enabled).
+	@whip path /whip /whip/*
+	reverse_proxy @whip 127.0.0.1:8080
+
+	reverse_proxy 127.0.0.1:3000
+}

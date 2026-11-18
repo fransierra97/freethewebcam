@@ -1,0 +1,58 @@
+{
+  "name": "freethewebcam",
+  "version": "0.1.0",
+  "description": "Open-source, white-label live webcam streaming platform for independent creators and studios.",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "start": "node src/main.ts",
+    "dev": "node --watch src/main.ts",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "demo": "node scripts/demo.ts",
+    "test:pg": "node scripts/test-pg.ts"
+  },
+  "keywords": [
+    "webcam",
+    "live-streaming",
+    "webrtc",
+    "livekit",
+    "white-label",
+    "creator-platform",
+    "self-hosted",
+    "fastify",
+    "typescript"
+  ],
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.16",
+    "@fastify/cookie": "^11.1.5",
+    "@fastify/formbody": "^9.0.2",
+    "@fastify/multipart": "^10.1.9",
+    "@fastify/static": "^10.1.11",
+    "@fastify/websocket": "^11.3.7",
+    "fastify": "^5.12.8",
+    "hls.js": "^1.7.4",
+    "ioredis": "^6.0.0",
+    "livekit-client": "^2.24.1",
+    "livekit-server-sdk": "^2.20.0",
+    "pg": "^8.23.1",
+    "web-push": "^4.0.0",
+    "yaml": "^2.9.1",
+    "yoti": "^4.16.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite-socket": "^0.2.19",
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "@types/web-push": "^3.6.4",
+    "@types/ws": "^8.18.2",
+    "typescript": "^7.0.2"
+  },
+  "directories": {
+    "doc": "docs"
+  }
+}

@@ -1,0 +1,48 @@
+# Preconfigured values loaded on first start.
+# After that they are edited from the admin panel (/admin).
+# Prices and percentages are EXAMPLES: each operator must set their own.
+
+economy:
+  currency: USD
+  creatorSharePct: 50        # % of each spent token that goes to the creator
+  tokenValueCents: 10        # payout value to the creator per token earned
+  payoutMinTokens: 200       # minimum to request a payout
+  tipMin: 1
+  packages:
+    - { id: p100, tokens: 100, priceCents: 999 }
+    - { id: p250, tokens: 250, priceCents: 2299 }
+    - { id: p500, tokens: 500, priceCents: 4399 }
+    - { id: p1000, tokens: 1000, priceCents: 7999 }
+  levels:
+    - { name: Newcomer, minSpent: 0 }
+    - { name: Bronze, minSpent: 100 }
+    - { name: Silver, minSpent: 500 }
+    - { name: Gold, minSpent: 2000 }
+    - { name: Diamond, minSpent: 10000 }
+
+# Creator verification: the first active one is used; the rest are fallbacks.
+creatorKycProviders: [yoti, veriff]
+
+# Rules per market. ageCheck: verify | self_declare | blocked
+regions:
+  US:
+    ageCheck: verify
+    viewerAgeProviders: [yoti]
+    paymentProviders: [ccbill]
+  EU:
+    ageCheck: verify
+    viewerAgeProviders: [eu_age_app, yoti]
+    paymentProviders: [ccbill]
+  LATAM:
+    ageCheck: verify
+    viewerAgeProviders: [yoti, unico]
+    paymentProviders: [vendo, ccbill]
+  OTHER:
+    ageCheck: verify
+    viewerAgeProviders: [yoti]
+    paymentProviders: [ccbill]
+
+# Per-country settings that override the market's.
+countryOverrides:
+  BR: { viewerAgeProviders: [unico, yoti], paymentProviders: [vendo, ccbill] }
+  MX: { paymentProviders: [vendo, ccbill] }
